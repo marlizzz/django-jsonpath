@@ -1,0 +1,21 @@
+[project]
+name = "django-jsonpath"
+version = "0.1.0"
+description = "Django-native JSONPath support for queries through the ORM."
+readme = "README.md"
+authors = [
+    { name = "marlizzz", email = "264201846+marlizzz@users.noreply.github.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "django>=4.2",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.12,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "psycopg[binary]>=3.3.5",
+]
