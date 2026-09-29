@@ -3,6 +3,7 @@ import json
 from django_jsonpath.lookup import JsonPathTerminalLookup
 from django_jsonpath.transform import (
     JsonPathAnyTransform,
+    JsonPathIndexTransform,
     JsonPathKeyTransform,
     JsonPathTransform,
 )
@@ -33,6 +34,9 @@ class JsonPathSQLCompiler:
 
         if isinstance(node, JsonPathTransform):
             return "$"
+
+        if isinstance(node, JsonPathIndexTransform):
+            return f"{self.compile_path(node.lhs)}[{int(node.key_name)}]"
 
     def get_root_node(self, node):
         if isinstance(node, JsonPathTransform):
