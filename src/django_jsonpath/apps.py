@@ -6,7 +6,13 @@ class DjangoJsonPathConfig(AppConfig):
     name = "django_jsonpath"
 
     def ready(self):
-        from django_jsonpath.lookup import JsonPathGtLookup
+        from django_jsonpath.lookup import (
+            JsonPathExactLookup,
+            JsonPathGteLookup,
+            JsonPathGtLookup,
+            JsonPathLteLookup,
+            JsonPathLtLookup,
+        )
         from django_jsonpath.transform import (
             JsonPathAnyTransform,
             JSONPathField,
@@ -14,5 +20,11 @@ class DjangoJsonPathConfig(AppConfig):
         )
 
         JSONField.register_lookup(JsonPathTransform)
+
+        JSONPathField.register_lookup(JsonPathExactLookup)
+        JSONPathField.register_lookup(JsonPathGteLookup)
         JSONPathField.register_lookup(JsonPathGtLookup)
+        JSONPathField.register_lookup(JsonPathLteLookup)
+        JSONPathField.register_lookup(JsonPathLtLookup)
+
         JSONPathField.register_lookup(JsonPathAnyTransform)
