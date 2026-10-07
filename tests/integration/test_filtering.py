@@ -170,3 +170,18 @@ class TestLte(ProductJSONPathFilterTestCase):
             ("payload__jsonpath__items__any__price__lte", 50, 2),
         ]
         self.assert_filter_counts(cases)
+
+
+class TestFloat(TestCase):
+    def test_nan_raises(self):
+        Product.objects.create(payload={"item": {"price": 50}})
+
+        with self.assertRaises(ValueError) as exc:
+            Product.objects.filter(
+                payload__jsonpath__item__price__gt=float("nan")
+            ).count()
+
+        self.assertEqual(
+            str(exc.exception),
+            "JSONPath numeric value must be finite",
+        )

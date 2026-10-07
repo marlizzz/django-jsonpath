@@ -1,4 +1,5 @@
 import json
+import math
 
 from django_jsonpath.lookup import JsonPathTerminalLookup
 from django_jsonpath.transform import (
@@ -65,6 +66,9 @@ class JsonPathSQLCompiler:
 
         if isinstance(value, bool):
             return "true" if value else "false"
+
+        if isinstance(value, float) and not math.isfinite(value):
+            raise ValueError("JSONPath numeric value must be finite")
 
         if isinstance(value, (int, str, float)):
             return json.dumps(value)
