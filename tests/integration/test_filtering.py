@@ -6,8 +6,9 @@ from tests.models import Product
 class ProductJSONPathFilterTestCase(TestCase):
     def assert_filter_counts(self, cases):
         for lookup, value, expected_count in cases:
-            count = Product.objects.filter(**{lookup: value}).count()
-            self.assertEqual(count, expected_count)
+            with self.subTest(lookup=lookup, value=value, expected_count=expected_count):
+                count = Product.objects.filter(**{lookup: value}).count()
+                self.assertEqual(count, expected_count)
 
 
 class TestExact(ProductJSONPathFilterTestCase):
@@ -123,6 +124,51 @@ class TestGt(ProductJSONPathFilterTestCase):
             ("payload__jsonpath__items__0__groups__1__price__gt", 100, 2),
             ("payload__jsonpath__items__1__groups__0__price__gt", 50, 1),
             ("payload__jsonpath__items__1__groups__0__price__gt", 70, 0),
+        ]
+        self.assert_filter_counts(cases)
+
+    def test_combined_any_and_index_transforms(self):
+        Product.objects.bulk_create([
+            Product(
+                payload={
+                    "collections": [
+                        {
+                            "items": [
+                                {
+                                    "positions": [
+                                        [{"price": 5}, {"price": 90}],
+                                        [{"price": 10}, {"price": 150}],
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ),
+            Product(
+                payload={
+                    "collections": [
+                        {
+                            "items": [
+                                {
+                                    "positions": [
+                                        [{"price": 150}, {"price": 5}],
+                                        [{"price": 100}, {"price": 10}],
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ),
+        ])
+
+        cases = [
+            ("payload__jsonpath__collections__any__items__0__positions__any__1__price__gt", 100, 1),
+            ("payload__jsonpath__collections__any__items__0__positions__any__1__price__gt", 150, 0),
+            ("payload__jsonpath__collections__any__items__0__positions__any__1__price__gt", 5, 2),
+            ("payload__jsonpath__collections__any__items__0__positions__0__any__price__gt", 150, 0),
+            ("payload__jsonpath__collections__any__items__0__positions__0__any__price__gt", 90, 1),
         ]
         self.assert_filter_counts(cases)
 

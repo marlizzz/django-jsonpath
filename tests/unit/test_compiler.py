@@ -31,6 +31,18 @@ class TestJsonPathSQL(SimpleTestCase):
         assert isinstance(params[2], str)
         assert params[2] == '$."items"[*]?(@."price" > 100)'
 
+    def test_multiple_any_and_index_transforms_combined(self):
+        qs = Product.objects.filter(
+            payload__jsonpath__collections__any__items__0__positions__any__1__price__gt=100,
+        )
+
+        params: tuple[str]
+        _, params = qs.query.sql_with_params()
+
+        assert len(params) == 1
+        assert isinstance(params[0], str)
+        assert params[0] == '$."collections"[*]."items"[0]."positions"[*][1]?(@."price" > 100)'
+
 
 class TestJsonPathLiteralCompilation(SimpleTestCase):
     def test_unsupported_type_raises(self):
