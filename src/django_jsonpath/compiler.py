@@ -1,6 +1,7 @@
 import json
 import math
 
+from django_jsonpath.exceptions import JsonPathCompileError
 from django_jsonpath.lookup import JsonPathTerminalLookup
 from django_jsonpath.transform import (
     JsonPathAnyTransform,
@@ -14,17 +15,32 @@ class JsonPathSQLCompiler:
     def __init__(self, compiler):
         self.compiler = compiler
 
-    def split_expression(self, node) -> tuple[list, object]:
-        n = node
+    def split_expression(self, node) -> tuple[list, object, object]:
+
+        path_nodes_start = node
         predicate = []
-        while n.lhs:
-            if not isinstance(n, (JsonPathKeyTransform, JsonPathTerminalLookup)):
-                break
+        is_predicate = True
 
-            predicate.append(n)
-            n = n.lhs
+        while node and not isinstance(node, JsonPathTransform):
 
-        return predicate, n
+            # The first time different node type encountered, it is not a predicate
+            if not isinstance(
+                node,
+                (JsonPathKeyTransform, JsonPathTerminalLookup)
+            ):
+                is_predicate = False
+
+            if is_predicate:
+                predicate.append(node)
+                path_nodes_start = path_nodes_start.lhs
+
+            node = node.lhs
+
+        root = getattr(node, "lhs", None)
+        if root is None:
+            raise JsonPathCompileError("Cannot determine JsonPath root node.")
+
+        return predicate, path_nodes_start, root
 
     def compile_path(self, node) -> str | None:
         if isinstance(node, JsonPathAnyTransform):
@@ -38,14 +54,6 @@ class JsonPathSQLCompiler:
 
         if isinstance(node, JsonPathIndexTransform):
             return f"{self.compile_path(node.lhs)}[{int(node.key_name)}]"
-
-    def get_root_node(self, node):
-        if isinstance(node, JsonPathTransform):
-            return node.lhs
-        elif hasattr(node, 'lhs'):
-            return self.get_root_node(node.lhs)
-        else:
-            raise ValueError("Cannot determine root node.")
 
     def compile_predicates(self, nodes) -> str:
         sql = ""
@@ -78,12 +86,11 @@ class JsonPathSQLCompiler:
         )
 
     def compile(self, end_node):
-        predicates, path = self.split_expression(end_node)
+        predicates, path, root = self.split_expression(end_node)
 
         predicate_expr = self.compile_predicates(predicates)
         path_expr = self.compile_path(path)
 
-        root = self.get_root_node(end_node)
         root_node_sql, root_params = self.compiler.compile(root)
 
         jsonpath = f"{path_expr}?({predicate_expr})"
