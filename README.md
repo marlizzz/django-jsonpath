@@ -33,7 +33,7 @@ Any stands for [*] in JSONPath, so the above query translates roughly to
 ```sql
 SELECT id, payload
 FROM prototype_product
-WHERE payload @? $."items"[*]?(@."price" > 100)::jsonpath
+WHERE payload @? '$."items"[*]?(@."price" > 100)'::jsonpath
 ```
 
 Index transforms are also supported:
@@ -64,7 +64,7 @@ Becomes
 ```sql
 SELECT id, payload
 FROM prototype_product
-WHERE payload @? $?(@."item"."position"."price" > 100)::jsonpath
+WHERE payload @? '$?(@."item"."position"."price" > 100)'::jsonpath
 ```
 
 ## Limitations
