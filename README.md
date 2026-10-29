@@ -1,4 +1,8 @@
 # django-jsonpath
+
+> [!IMPORTANT]
+> This project is in an early stage. Its API is experimental and may change before a stable release.
+
 Django-native JSONPath support for queries through the ORM.
 
 ## Installation
@@ -68,6 +72,7 @@ WHERE payload @? '$?(@."item"."position"."price" > 100)'::jsonpath
 ```
 
 ## Limitations
+
 * `any` is a reserved word for `[*]` transform. A JSON object key named `"any"` cannot currently be addressed through the DSL.
 * Integer transforms `__0` mean an array index, so key `"0"`, for example, would not be found
 * Supported versions of Django are 4.2, 5.0, 5.1, 5.2, 6.0, 6.1.
