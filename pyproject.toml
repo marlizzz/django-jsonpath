@@ -1,6 +1,6 @@
 [project]
 name = "django-jsonpath"
-version = "0.1.0"
+version = "0.1.0a1"
 description = "Django-native JSONPath support for queries through the ORM."
 readme = "README.md"
 authors = [
