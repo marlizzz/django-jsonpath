@@ -9,7 +9,7 @@ Django-native JSONPath support for queries through the ORM.
 
 Install the library with:
 ```bash
-pip install git+https://github.com/marlizzz/django-jsonpath.git
+pip install django-jsonpath
 ```
 
 Then add django-jsonpath to INSTALLED_APPS to your settings:
